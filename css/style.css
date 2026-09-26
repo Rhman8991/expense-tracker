@@ -1,0 +1,68 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    color: #222;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+.app {
+    width: min(100% - 2rem, 900px);
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.app-header {
+    margin-bottom: 2rem;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.summary-card {
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+}
+
+input,
+select,
+textarea {
+    padding: 0.6rem;
+}
+
+button {
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+}
+
+.transaction-form-section,
+.transactions-section {
+    margin-top: 2rem;
+}
+
+@media (max-width: 600px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
