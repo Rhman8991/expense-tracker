@@ -17,6 +17,27 @@ transactionForm.addEventListener("submit", e => {
     console.log(transactions);
 })
 
+transactionsList.addEventListener("click", e => {
+    const button = e.target.closest("button");
+
+    if(!button) {
+        return;
+    }
+
+    const card = button.closest(".transaction-card");
+
+    if(!card) {
+        return;
+    }
+
+    const cardId = card.dataset.id
+
+    if(button.classList.contains("delete-btn")) {
+        deleteTransaction(cardId);
+        renderTransactions();
+    }
+})
+
 function saveTransaction() {
     const transaction = {
         id: crypto.randomUUID(),
@@ -67,6 +88,20 @@ function createTransactionCard(transaction) {
     const transCardDescription = document.createElement("p");
     transCardDescription.textContent = description === "" ? "No description" : `Description: ${description}`;
 
-    transactionCard.append(transCardType, transCardAmount, transCardCategory, transCardDate, transCardDescription);
+    const deleteTransactionBtn = document.createElement("button");
+    deleteTransactionBtn.classList.add("delete-btn");
+    deleteTransactionBtn.textContent = "Delete";
+
+    transactionCard.append(transCardType, transCardAmount, transCardCategory, transCardDate, transCardDescription, deleteTransactionBtn);
     return transactionCard;
+}
+
+function deleteTransaction(id) {
+    const index = transactions.findIndex(transaction => transaction.id === id);
+
+    if(index === -1) {
+        return;
+    }
+
+    transactions.splice(index, 1);
 }
