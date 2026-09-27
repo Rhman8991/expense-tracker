@@ -32,10 +32,17 @@ function saveTransaction() {
 function renderTransactions() {
     transactionsList.innerHTML = "";
 
-    transactions.forEach(transaction => {
-        const card = createTransactionCard(transaction);
-        transactionsList.appendChild(card);
-    })
+    if(transactions.length === 0) {
+        const noTransactionsMsg = document.createElement("p");
+        noTransactionsMsg.textContent = "No transactions yet.";
+        transactionsList.appendChild(noTransactionsMsg);
+        return;
+    } else {
+        transactions.forEach(transaction => {
+            const card = createTransactionCard(transaction);
+            transactionsList.appendChild(card);
+        })
+    }
 }
 
 function createTransactionCard(transaction) {
