@@ -134,11 +134,14 @@ function deleteTransaction(id) {
 }
 
 function resetTransaction() {
-    transactionType.value = "";
+    transactionType.selectedIndex = 0;
     transactionAmount.value = "";
     transactionCategory.value = "";
     transactionDate.value = "";
     transactionDescription.value = "";
+    submitBtn.textContent = "Add transaction";
+    editingTransactionId = null;
+}
 
 function editTransaction(transactionId) {
     const index = transactions.findIndex(transaction => transaction.id === transactionId);
