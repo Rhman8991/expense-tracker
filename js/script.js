@@ -5,6 +5,7 @@ const transactionAmount = document.getElementById("amount");
 const transactionCategory = document.getElementById("category");
 const transactionDate = document.getElementById("date");
 const transactionDescription = document.getElementById("description");
+const submitBtn = document.querySelector("button[type='submit']");
 
 const transactionsList = document.getElementById("transactions-list");
 
@@ -37,6 +38,13 @@ transactionsList.addEventListener("click", e => {
     if(button.classList.contains("delete-btn")) {
         deleteTransaction(cardId);
         renderTransactions();
+        if(editingTransactionId === cardId) {
+            resetTransaction();
+        }
+    }
+
+    if(button.classList.contains("edit-btn")) {
+        editTransaction(cardId);
     }
 })
 
@@ -61,7 +69,7 @@ function saveTransaction() {
         
         transactions[index] = transaction
     } else {
-    transactions.push(transaction);
+        transactions.push(transaction);
     }
 }
 
@@ -107,7 +115,11 @@ function createTransactionCard(transaction) {
     deleteTransactionBtn.classList.add("delete-btn");
     deleteTransactionBtn.textContent = "Delete";
 
-    transactionCard.append(transCardType, transCardAmount, transCardCategory, transCardDate, transCardDescription, deleteTransactionBtn);
+    const editTransactionBtn = document.createElement("button");
+    editTransactionBtn.classList.add("edit-btn");
+    editTransactionBtn.textContent = "Edit";
+
+    transactionCard.append(transCardType, transCardAmount, transCardCategory, transCardDate, transCardDescription, editTransactionBtn, deleteTransactionBtn);
     return transactionCard;
 }
 
@@ -127,4 +139,22 @@ function resetTransaction() {
     transactionCategory.value = "";
     transactionDate.value = "";
     transactionDescription.value = "";
+
+function editTransaction(transactionId) {
+    const index = transactions.findIndex(transaction => transaction.id === transactionId);
+
+    if(index === -1) {
+        return;
+    }
+
+    const {id, type, amount, category, date, description} = transactions[index];
+
+    editingTransactionId = id;
+    transactionType.value = type;
+    transactionAmount.value = amount;
+    transactionCategory.value = category;
+    transactionDate.value = date;
+    transactionDescription.value = description;
+
+    submitBtn.textContent = "Update transaction";
 }
