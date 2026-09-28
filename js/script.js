@@ -13,8 +13,8 @@ const transactions = [];
 transactionForm.addEventListener("submit", e => {
     e.preventDefault();
     saveTransaction();
-    renderTransactions()
-    console.log(transactions);
+    renderTransactions();
+    resetTransaction();
 })
 
 transactionsList.addEventListener("click", e => {
@@ -104,4 +104,12 @@ function deleteTransaction(id) {
     }
 
     transactions.splice(index, 1);
+}
+
+function resetTransaction() {
+    transactionType.value = "";
+    transactionAmount.value = "";
+    transactionCategory.value = "";
+    transactionDate.value = "";
+    transactionDescription.value = "";
 }
