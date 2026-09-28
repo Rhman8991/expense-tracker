@@ -10,6 +10,8 @@ const transactionsList = document.getElementById("transactions-list");
 
 const transactions = [];
 
+let editingTransactionId = null;
+
 transactionForm.addEventListener("submit", e => {
     e.preventDefault();
     saveTransaction();
@@ -39,15 +41,28 @@ transactionsList.addEventListener("click", e => {
 })
 
 function saveTransaction() {
+    const transactionId = editingTransactionId ? editingTransactionId : crypto.randomUUID();
+
     const transaction = {
-        id: crypto.randomUUID(),
+        id: transactionId,
         type: transactionType.value,
         amount: Number(transactionAmount.value),
         category: transactionCategory.value,
         date: transactionDate.value,
         description: transactionDescription.value
     }
+
+    if(editingTransactionId) {
+        const index = transactions.findIndex(transaction => transaction.id === editingTransactionId);
+        
+        if(index === -1) {
+            return;
+        }
+        
+        transactions[index] = transaction
+    } else {
     transactions.push(transaction);
+    }
 }
 
 function renderTransactions() {
