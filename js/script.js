@@ -20,6 +20,9 @@ const categories = {
 
 transactionForm.addEventListener("submit", e => {
     e.preventDefault();
+    if(!validateTransForm()) {
+        return;
+    }
     saveTransaction();
     renderTransactions();
     resetTransaction();
@@ -54,23 +57,63 @@ transactionsList.addEventListener("click", e => {
 })
 
 transactionForm.addEventListener("change", e => {
-    if(e.target.id === "type") {
-        renderTransactionCategoryOptions(e.target.value);
-    } else if(e.target.id === "category") {
-        const selectedCategory = e.target.value;
+    const id = e.target.id;
+    const inputEl = e.target;
 
-        let foundOption = "";
+    if(id === "type") {
+        const validateChange = validateTransType();
+        const isHaveErrMsg = checkErrorMsg(inputEl);
+
+        if(validateChange) {
+            if(isHaveErrMsg) {
+                removeErrorMsg(inputEl);
+            }
+            
+            renderTransactionCategoryOptions(inputEl.value);
+        }
+    } else if(id === "category") {
+        const selectedCategory = inputEl.value;
 
         for(const categoryType in categories) {
             if(categories[categoryType].includes(selectedCategory)) {
-                foundOption = categoryType;
+                transactionType.value = categoryType;
                 break;
             }
         }
 
-        transactionType.value = foundOption;
-        renderTransactionCategoryOptions(foundOption);
-        transactionCategory.value = selectedCategory;
+        const validateChange = validateTransCategory();
+        const errMsgInTransType = checkErrorMsg(transactionType);
+        const errMsgInTransCat = checkErrorMsg(inputEl);
+
+        if(validateChange) {
+            if(errMsgInTransType) {
+                removeErrorMsg(transactionType);
+            }
+            if(errMsgInTransCat) {
+                removeErrorMsg(inputEl);
+            }
+            renderTransactionCategoryOptions(transactionType.value);
+            transactionCategory.value = selectedCategory;
+        }
+
+    } else if(id === "amount") {
+        const validateChange = validateTransAmount();
+        const isHaveErrMsg = checkErrorMsg(inputEl);
+
+        if(validateChange) {
+            if(isHaveErrMsg) {
+                removeErrorMsg(inputEl);
+            }
+        }
+    } else if(id === "date") {
+        const validateChange = validateTransDate();
+        const isHaveErrMsg = checkErrorMsg(inputEl);
+
+        if(validateChange) {
+            if(isHaveErrMsg) {
+                removeErrorMsg(inputEl);
+            }
+        }
     }
 })
 
@@ -167,6 +210,7 @@ function resetTransaction() {
     transactionDescription.value = "";
     submitBtn.textContent = "Add transaction";
     editingTransactionId = null;
+    removeErrorMsg();
     renderTransactionCategoryOptions();
 }
 
@@ -176,6 +220,8 @@ function editTransaction(transactionId) {
     if(index === -1) {
         return;
     }
+
+    resetTransaction()
 
     const {id, type, amount, category, date, description} = transactions[index];
 
@@ -222,6 +268,138 @@ function createOption(category) {
     option.value = category;
     option.textContent = category.charAt(0).toUpperCase() + category.slice(1,);
     return option;
+}
+
+function validateTransType() {
+    const transType = transactionType;
+
+    if(transType.value === "") {
+        const errMsg = "Please select transation type."
+        showErrorMsg(transType, errMsg)
+    }
+
+    return transType.value !== "";
+}
+
+function validateTransAmount() {
+    const transAmount = transactionAmount;
+
+    if(transAmount.value.trim() === "") {
+        const errMsg = "Please input transaction amount.";
+        showErrorMsg(transAmount, errMsg)
+        return false;
+    }
+    
+    const inputAmount = Number(transAmount.value);
+
+    if(inputAmount <= 0) {
+        const errMsg = "Transaction amount must be greater than 0.";
+        showErrorMsg(transAmount, errMsg);
+        return false;
+    }
+
+    if(Number.isFinite(inputAmount)) {
+        return true;
+    } else {
+        const errMsg = "Please input valid transaction amount."
+        showErrorMsg(transAmount, errMsg);
+        return false;
+    }
+}
+
+function validateTransCategory() {
+    const transType = transactionType;
+    const transCategory = transactionCategory;
+
+    if(transCategory.value === "") {
+        const errMsg = "Please select transaction category."
+        showErrorMsg(transCategory, errMsg);
+        return false;
+    }
+
+    const validTransType = transType.value === "income" || transType.value === "expense";
+
+    if(validTransType && categories[transType.value].includes(transCategory.value)) {
+        return true;
+    } else {
+        const errMsg = "Wrong type and transaction category.";
+        showErrorMsg(transCategory, errMsg);
+        return false;
+    }
+}
+
+function validateTransDate() {
+    const transDate = transactionDate;
+
+    if(transDate.value === "") {
+        const errMsg = "Please input transaction date.";
+        showErrorMsg(transDate, errMsg);
+    }
+
+    return transDate.value !== "";
+}
+
+function validateTransForm() {
+    if(!validateTransType()) {
+        return false;
+    }
+
+    if(!validateTransAmount()) {
+        return false;
+    }
+
+    if(!validateTransCategory()) {
+        return false;
+    }
+
+    if(!validateTransDate()) {
+        return false;
+    }
+
+    return true;
+}
+
+function checkErrorMsg(input) {
+    const inputContainer = input.closest(".form-group");
+    const foundErrorMsg = inputContainer.querySelector(".error-message");
+    return foundErrorMsg ? true: false;
+}
+
+function showErrorMsg(input, message) {
+    const inputContainer = input.closest(".form-group");
+    const foundErrorMsg = inputContainer.querySelector(".error-message");
+
+    if(inputContainer) {
+        if(foundErrorMsg) {
+            foundErrorMsg.remove();
+        }
+
+        const errorMessage = document.createElement("p");
+        errorMessage.classList.add("error-message");
+        errorMessage.textContent = message;
+        inputContainer.appendChild(errorMessage);
+    }
+}
+
+function removeErrorMsg(input = "") {
+    if(input === "") {
+        const errorMessages = document.querySelectorAll(".error-message");
+
+        if(errorMessages.length > 0) {
+            errorMessages.forEach(message => message.remove());
+        }
+    } else {
+        const inputIds = ["type", "amount", "category", "date"];
+
+        if(inputIds.includes(input.id)) {
+            const inputContainer = input.closest(".form-group");
+            const errorMessage = inputContainer.querySelector(".error-message");
+
+            if(errorMessage) {
+                errorMessage.remove();
+            }
+        }
+    }
 }
 
 renderTransactionCategoryOptions();
