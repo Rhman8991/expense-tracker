@@ -6,6 +6,9 @@ const transactionCategory = document.getElementById("category");
 const transactionDate = document.getElementById("date");
 const transactionDescription = document.getElementById("description");
 const submitBtn = document.querySelector("button[type='submit']");
+const summaryBalance = document.getElementById("balance");
+const summaryIncomes = document.getElementById("income");
+const summaryExpenses = document.getElementById("expenses");
 
 const transactionsList = document.getElementById("transactions-list");
 
@@ -24,8 +27,8 @@ transactionForm.addEventListener("submit", e => {
         return;
     }
     saveTransaction();
-    renderTransactions();
     resetTransaction();
+    renderApp();
 })
 
 transactionsList.addEventListener("click", e => {
@@ -45,7 +48,7 @@ transactionsList.addEventListener("click", e => {
 
     if(button.classList.contains("delete-btn")) {
         deleteTransaction(cardId);
-        renderTransactions();
+        renderApp();
         if(editingTransactionId === cardId) {
             resetTransaction();
         }
@@ -169,7 +172,7 @@ function createTransactionCard(transaction) {
     transCardType.textContent = `Type: ${type}`;
 
     const transCardAmount = document.createElement("p");
-    transCardAmount.textContent = `Amount $${amount}`
+    transCardAmount.textContent = `Amount $${amount}`;
 
     const transCardCategory = document.createElement("p");
     transCardCategory.textContent = `Category: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
@@ -274,8 +277,8 @@ function validateTransType() {
     const transType = transactionType;
 
     if(transType.value === "") {
-        const errMsg = "Please select transation type."
-        showErrorMsg(transType, errMsg)
+        const errMsg = "Please select transation type.";
+        showErrorMsg(transType, errMsg);
     }
 
     return transType.value !== "";
@@ -286,7 +289,7 @@ function validateTransAmount() {
 
     if(transAmount.value.trim() === "") {
         const errMsg = "Please input transaction amount.";
-        showErrorMsg(transAmount, errMsg)
+        showErrorMsg(transAmount, errMsg);
         return false;
     }
     
@@ -312,7 +315,7 @@ function validateTransCategory() {
     const transCategory = transactionCategory;
 
     if(transCategory.value === "") {
-        const errMsg = "Please select transaction category."
+        const errMsg = "Please select transaction category.";
         showErrorMsg(transCategory, errMsg);
         return false;
     }
@@ -361,15 +364,19 @@ function validateTransForm() {
 
 function checkErrorMsg(input) {
     const inputContainer = input.closest(".form-group");
-    const foundErrorMsg = inputContainer.querySelector(".error-message");
-    return foundErrorMsg ? true: false;
+
+    if(inputContainer) {
+        const foundErrorMsg = inputContainer.querySelector(".error-message");
+        return foundErrorMsg ? true: false;
+    }
 }
 
 function showErrorMsg(input, message) {
     const inputContainer = input.closest(".form-group");
-    const foundErrorMsg = inputContainer.querySelector(".error-message");
 
     if(inputContainer) {
+        const foundErrorMsg = inputContainer.querySelector(".error-message");
+        
         if(foundErrorMsg) {
             foundErrorMsg.remove();
         }
@@ -401,5 +408,43 @@ function removeErrorMsg(input = "") {
         }
     }
 }
+
+function calculateIncomes() {
+    return transactions.filter(transaction => transaction.type === "income").reduce((total, transaction) => total + transaction.amount, 0);
+}
+
+function calculateExpenses() {
+    return transactions.filter(transaction => transaction.type === "expense").reduce((total, transaction) => total + transaction.amount, 0);
+}
+
+function calculateBalance(incomes, expenses) {
+    return incomes - expenses;
+}
+
+function renderSummary() {
+    const incomes = calculateIncomes();
+    const expenses = calculateExpenses();
+    const balance = calculateBalance(incomes, expenses);
+
+    summaryBalance.textContent = `${currencyFormatter(balance)}`;
+    summaryIncomes.textContent = `${currencyFormatter(incomes)}`;
+    summaryExpenses.textContent = `${currencyFormatter(expenses)}`;
+}
+
+const formatter = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD"
+    });
+
+function currencyFormatter(value) {
+    return formatter.format(value);
+}
+
+function renderApp() {
+    renderTransactions();
+    renderSummary();
+}
+
+renderApp();
 
 renderTransactionCategoryOptions();
