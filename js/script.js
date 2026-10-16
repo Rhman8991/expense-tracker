@@ -12,7 +12,16 @@ const summaryExpenses = document.getElementById("expenses");
 
 const transactionsList = document.getElementById("transactions-list");
 
-const transactions = [];
+let transactions = [];
+
+try{
+    const transactionsData = JSON.parse(localStorage.getItem("transactionsData"))
+    if(transactionsData !== null && Array.isArray(transactionsData)) {
+        transactions = transactionsData;
+    }
+} catch(err) {
+    transactions = [];
+}
 
 let editingTransactionId = null;
 
@@ -26,9 +35,12 @@ transactionForm.addEventListener("submit", e => {
     if(!validateTransForm()) {
         return;
     }
-    saveTransaction();
-    resetTransaction();
-    renderApp();
+    const transactionSaved = saveTransaction();
+
+    if(transactionSaved) {
+        resetTransaction();
+        renderApp();
+    }
 })
 
 transactionsList.addEventListener("click", e => {
@@ -65,11 +77,16 @@ transactionForm.addEventListener("change", e => {
 
     if(id === "type") {
         const validateChange = validateTransType();
-        const isHaveErrMsg = checkErrorMsg(inputEl);
+        const isHaveErrMsgType = checkErrorMsg(inputEl);
+        const isHaveErrMsgCat = checkErrorMsg(transactionCategory);
 
         if(validateChange) {
-            if(isHaveErrMsg) {
+            if(isHaveErrMsgType) {
                 removeErrorMsg(inputEl);
+            }
+
+            if(isHaveErrMsgCat) {
+                removeErrorMsg(transactionCategory);
             }
             
             renderTransactionCategoryOptions(inputEl.value);
@@ -136,13 +153,16 @@ function saveTransaction() {
         const index = transactions.findIndex(transaction => transaction.id === editingTransactionId);
         
         if(index === -1) {
-            return;
+            return false;
         }
         
-        transactions[index] = transaction
+        transactions[index] = transaction;
     } else {
         transactions.push(transaction);
     }
+
+    localStorage.setItem("transactionsData", JSON.stringify(transactions));
+    return true;
 }
 
 function renderTransactions() {
@@ -172,7 +192,7 @@ function createTransactionCard(transaction) {
     transCardType.textContent = `Type: ${type}`;
 
     const transCardAmount = document.createElement("p");
-    transCardAmount.textContent = `Amount $${amount}`;
+    transCardAmount.textContent = `Amount ${currencyFormatter(amount)}`;
 
     const transCardCategory = document.createElement("p");
     transCardCategory.textContent = `Category: ${category.charAt(0).toUpperCase() + category.slice(1)}`;
@@ -203,6 +223,7 @@ function deleteTransaction(id) {
     }
 
     transactions.splice(index, 1);
+    localStorage.setItem("transactionsData", JSON.stringify(transactions));
 }
 
 function resetTransaction() {
@@ -277,7 +298,7 @@ function validateTransType() {
     const transType = transactionType;
 
     if(transType.value === "") {
-        const errMsg = "Please select transation type.";
+        const errMsg = "Please select transaction type.";
         showErrorMsg(transType, errMsg);
     }
 
@@ -369,6 +390,8 @@ function checkErrorMsg(input) {
         const foundErrorMsg = inputContainer.querySelector(".error-message");
         return foundErrorMsg ? true: false;
     }
+
+    return false;
 }
 
 function showErrorMsg(input, message) {
@@ -392,9 +415,10 @@ function removeErrorMsg(input = "") {
     if(input === "") {
         const errorMessages = document.querySelectorAll(".error-message");
 
-        if(errorMessages.length > 0) {
+        if(errorMessages && errorMessages.length > 0) {
             errorMessages.forEach(message => message.remove());
         }
+        
     } else {
         const inputIds = ["type", "amount", "category", "date"];
 
